@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f9c9d6">
+<link rel="icon" href="data:,">
+<title>Para Vale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Nunito:wght@400;600;700&family=Caveat:wght@600&display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+
+/* Layout: una sola pantalla; la noche sin dormir se convierte en amanecer al tocar. Diseño de un solo tema a propósito. */
+:root{
+  --night:#141a3a; --night2:#2a2366; --dawn1:#ff9a8b; --dawn2:#ffc9a3; --sun:#ffe08a;
+  --pink:#f9c9d6;
+  --ink:#4a1d33; --ink-soft:rgba(74,29,51,.72); --card:rgba(255,255,255,.5); --line:rgba(74,29,51,.18);
+  --rose:#ff6f91;
+  --display:"Young Serif", Georgia, serif;
+  --body:"Nunito", system-ui, -apple-system, sans-serif;
+  --hand:"Caveat", "Bradley Hand", cursive;
+  color-scheme: dark;
+}
+html,body{height:100%}
+body{
+  background:var(--pink); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.55;
+  overflow-x:hidden;
+}
+.sky{display:none}
+canvas{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:1}
+.sun{position:fixed; left:50%; bottom:-180px; width:260px; height:260px; margin-left:-130px; border-radius:50%;
+  background:radial-gradient(circle,var(--sun) 0%,rgba(255,224,138,.55) 40%,rgba(255,224,138,0) 70%);
+  transition:transform 2.6s cubic-bezier(.2,.8,.2,1); z-index:1; display:none}
+body.awake .sun{transform:translateY(-120px)}
+
+main{position:relative; z-index:2; min-height:100%; display:flex; align-items:center; justify-content:center;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); padding-block:32px; box-sizing:border-box}
+
+/* Pantalla 1: sobre */
+.intro{display:flex; flex-direction:column; align-items:center; gap:22px; text-align:center; max-width:360px}
+.moon{font-family:var(--display); font-size:15px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft)}
+.envelope{
+  position:relative; width:250px; max-width:100%; aspect-ratio:3/2; border:0; padding:0; cursor:pointer; background:none;
+  animation:float 3.2s ease-in-out infinite; -webkit-tap-highlight-color:transparent;
+}
+.envelope .body{position:absolute; inset:0; border-radius:10px; background:#fffafb; box-shadow:0 18px 36px rgba(122,40,76,.22)}
+.envelope .flap{position:absolute; left:0; right:0; top:0; height:62%; background:#ffe1ea; clip-path:polygon(0 0,100% 0,50% 100%); border-radius:10px 10px 0 0; transform-origin:top; transition:transform .6s ease}
+.envelope .seal{position:absolute; left:50%; top:52%; width:46px; height:46px; margin:-23px 0 0 -23px; border-radius:50%;
+  background:var(--rose); display:grid; place-items:center; color:#fff; font-family:Arial, sans-serif; font-size:22px; line-height:1; box-shadow:0 3px 8px rgba(0,0,0,.25)}
+.envelope .to{position:absolute; left:0; right:0; bottom:14px; font-family:var(--hand); font-size:28px; color:#8a2d4a}
+.envelope:focus-visible{outline:3px solid var(--ink); outline-offset:6px; border-radius:12px}
+.envelope.opening .flap{transform:rotateX(180deg)}
+.hint{font-size:15px; color:var(--ink-soft)}
+.hint b{color:var(--ink)}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-10px) rotate(1.5deg)}}
+
+/* Pantalla 2: carta */
+.letter{max-width:420px; width:100%; display:flex; flex-direction:column; gap:18px; text-align:center;
+  animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
+.eyebrow{font-weight:700; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft)}
+h1{font-family:var(--display); font-weight:400; font-size:clamp(40px,12vw,58px); line-height:1.02; margin:0; text-wrap:balance;
+}
+.lead{font-size:18px; margin:0; text-wrap:pretty}
+.card{background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px 18px 14px; text-align:left;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px)}
+.card h2{font-family:var(--display); font-weight:400; font-size:20px; margin:0 0 10px}
+.todo{list-style:none; margin:0; padding:0; display:grid; gap:4px}
+.todo label{display:flex; align-items:center; gap:12px; padding:8px 4px; cursor:pointer; font-weight:600}
+.todo input{appearance:none; -webkit-appearance:none; width:24px; height:24px; flex:none; margin:0; border-radius:7px; border:2px solid var(--ink); display:grid; place-items:center; cursor:pointer; transition:background .2s}
+.todo input:checked{background:var(--ink)}
+.todo input:checked::after{content:""; width:6px; height:11px; border:solid var(--rose); border-width:0 3px 3px 0; transform:rotate(45deg) translate(-1px,-1px)}
+.todo input:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
+.todo input:checked + span{text-decoration:line-through; text-decoration-thickness:2px; opacity:.7}
+.done-msg{min-height:1.4em; margin:6px 0 0; font-weight:700; color:var(--ink); text-align:center}
+.warn{margin:8px 0 0; font-size:13px; font-style:italic; color:var(--ink-soft)}
+.sign{font-family:var(--hand); font-size:30px; line-height:1.1; margin:4px 0 0}
+.again{align-self:center; background:transparent; color:var(--ink); border:1px solid var(--line); border-radius:999px; padding:10px 18px; font:600 15px var(--body); cursor:pointer}
+.again:focus-visible{outline:2px solid var(--ink); outline-offset:3px}
+@keyframes rise{from{opacity:.0; transform:translateY(24px)}to{opacity:1; transform:none}}
+
+@media (prefers-reduced-motion: reduce){
+  .envelope{animation:none} .letter{animation:none} .sky,.sun{transition:none}
+}
+</style>
+
+</head>
+<body>
+<div class="sky night-bg"></div>
+<div class="sky dawn-bg"></div>
+<div class="sun"></div>
+<canvas id="fx"></canvas>
+
+<main>
+  <section class="intro" id="intro">
+    <button class="envelope" id="open" aria-label="Abrir la carta para Vale">
+      <span class="body"></span>
+      <span class="flap"></span>
+      <span class="seal">&#9829;</span>
+      <span class="to">Para Vale</span>
+    </button>
+    <p class="hint">Toca el sobre para abrirlo</p>
+  </section>
+
+  <section class="letter" id="letter" hidden>
+    <div class="eyebrow">Examen: terminado ✓</div>
+    <h1>¡Lo lograste, Vale!</h1>
+    <p class="lead">Después de tanta estudiadera y de madrugar desde las 6, por fin terminaste el examen. Espero que te haya ido súper bien y que ahora sí puedas descansar un poquito.</p>
+
+    <div class="card">
+      <h2>Misiones para después del examen</h2>
+      <ul class="todo">
+        <li><label><input type="checkbox" id="t1"><span>Recuperar las horas de sueño perdidas</span></label></li>
+        <li><label><input type="checkbox" id="t2"><span>Almorzar, porque ese estómago también merece atención</span></label></li>
+        <li><label><input type="checkbox" id="t3"><span>Ir a Santa Fe y descansar por fin 🥳🥳</span></label></li>
+      </ul>
+      <p class="done-msg" id="doneMsg" aria-live="polite"></p>
+      <p class="warn">Advertencia: prohibido trasnochar jugando parchís antes del próximo examen jajaj</p>
+    </div>
+
+    <p class="sign">¡Felicidades, Vale!</p>
+    <button class="again" id="again">Confeti</button>
+  </section>
+</main>
+
+<script>
+(function(){
+  const cv=document.getElementById('fx'), ctx=cv.getContext('2d');
+  let W,H,dpr; const stars=[]; let parts=[]; let awake=false;
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function size(){dpr=Math.min(window.devicePixelRatio||1,2); W=innerWidth; H=innerHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0)}
+  size(); addEventListener('resize',size);
+  for(let i=0;i<90;i++) stars.push({x:Math.random(),y:Math.random()*.8,r:Math.random()*1.4+.3,p:Math.random()*6.28});
+  const colors=['#ff6f91','#ffd25e','#ffffff','#e0477a','#7cc8f5','#a98bf0'];
+  function burst(){
+    for(let i=0;i<160;i++){
+      const heart=Math.random()<.25;
+      parts.push({x:W/2+(Math.random()-.5)*60,y:H*.42,vx:(Math.random()-.5)*11,vy:-Math.random()*12-4,
+        g:.22+Math.random()*.1,s:heart?14+Math.random()*8:5+Math.random()*6,rot:Math.random()*6.28,vr:(Math.random()-.5)*.3,
+        c:colors[i%colors.length],heart,life:0});
+    }
+  }
+  let starAlpha=0;
+  function frame(t){
+    ctx.clearRect(0,0,W,H);
+    if(awake) starAlpha=Math.max(0,starAlpha-.01);
+    if(starAlpha>0){
+      for(const s of stars){
+        ctx.globalAlpha=starAlpha*(.5+.5*Math.sin(t/700+s.p));
+        ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(s.x*W,s.y*H,s.r,0,6.28); ctx.fill();
+      }
+    }
+    ctx.globalAlpha=1;
+    parts=parts.filter(p=>p.y<H+40 && p.life<400);
+    for(const p of parts){
+      p.vy+=p.g; p.vx*=.99; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; p.life++;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.c;
+      if(p.heart){ctx.font=p.s+'px serif'; ctx.textAlign='center'; ctx.fillText('★',0,0)}
+      else ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);
+      ctx.restore();
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const env=document.getElementById('open');
+  env.addEventListener('click',()=>{
+    if(awake) return; awake=true;
+    env.classList.add('opening');
+    setTimeout(()=>{
+      document.body.classList.add('awake');
+      document.getElementById('intro').hidden=true;
+      document.getElementById('letter').hidden=false;
+      if(!reduce) burst();
+      try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}
+    }, reduce?0:650);
+  });
+  document.getElementById('again').addEventListener('click',burst);
+
+  const boxes=[...document.querySelectorAll('.todo input')], msg=document.getElementById('doneMsg');
+  boxes.forEach(b=>b.addEventListener('change',()=>{
+    if(boxes.every(x=>x.checked)){msg.textContent='¡Misiones cumplidas! Ahora sí, a descansar.'; if(!reduce) burst();}
+    else msg.textContent='';
+  }));
+})();
+</script>
+
+</body>
+</html>
